@@ -8,7 +8,7 @@ resource "random_password" "django_secret_key" {
 
 resource "aws_secretsmanager_secret" "django_secret_key" {
   name                    = "${local.name}/django-secret-key"
-  recovery_window_in_days = 7
+  recovery_window_in_days = var.secret_recovery_window_days
 }
 
 resource "aws_secretsmanager_secret_version" "django_secret_key" {

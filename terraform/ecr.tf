@@ -1,5 +1,6 @@
 resource "aws_ecr_repository" "app" {
-  name = local.name
+  name         = local.name
+  force_delete = var.ecr_force_delete
 
   # Tags can't be overwritten: every image is tagged with the git commit SHA,
   # so "what is running in prod" always maps to exactly one commit.

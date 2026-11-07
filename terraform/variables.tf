@@ -115,6 +115,18 @@ variable "db_deletion_protection" {
   default     = true
 }
 
+variable "secret_recovery_window_days" {
+  description = "Days before a deleted secret is really gone. Use 0 in practice accounts so you can destroy and redeploy right away."
+  type        = number
+  default     = 7
+}
+
+variable "ecr_force_delete" {
+  description = "Allow terraform destroy to delete the ECR repo even if it still has images (handy for practice, keep false in real prod)"
+  type        = bool
+  default     = false
+}
+
 # ---------- CI/CD ----------
 variable "github_repo" {
   description = "GitHub repository allowed to deploy, in owner/repo format"
