@@ -1,0 +1,37 @@
+# Manual rollback: point the service back at an earlier task definition revision.
+# Old images stay in ECR (lifecycle keeps the last 30), so this takes ~2 minutes.
+name: Rollback ECS service
+
+on:
+  workflow_dispatch:
+    inputs:
+      revision:
+        description: "Task definition revision number to roll back to (e.g. 12)"
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Roll back
+        run: |
+          TASK_DEF="${{ vars.ECS_TASK_FAMILY }}:${{ github.event.inputs.revision }}"
+          echo "Rolling back to $TASK_DEF"
+          aws ecs update-service --cluster "${{ vars.ECS_CLUSTER }}" \
+            --service "${{ vars.ECS_SERVICE }}" --task-definition "$TASK_DEF" > /dev/null
+          aws ecs wait services-stable --cluster "${{ vars.ECS_CLUSTER }}" --services "${{ vars.ECS_SERVICE }}"
+          echo "Rollback complete"
