@@ -116,7 +116,23 @@ jobs:
 
       - name: Block deploy if ECR scan finds CRITICAL vulnerabilities
         run: |
-          # ECR scans every pushed image (scan_on_push = true in Terraform)
+          # ECR scans every pushed image (scan_on_push = true in Terraform),
+          # but the scan record can take a few seconds to appear after the push.
+          # Poll until it exists (up to 5 minutes), then wait for it to finish.
+          for i in $(seq 1 30); do
+            if aws ecr describe-image-scan-findings \
+                 --repository-name "$ECR_REPOSITORY" --image-id imageTag=${{ github.sha }} > /dev/null 2>&1; then
+              echo "Scan found after $((i * 10)) seconds"
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "::error::No ECR scan appeared for this image after 5 minutes"
+              exit 1
+            fi
+            echo "Waiting for ECR to start the scan..."
+            sleep 10
+          done
+
           aws ecr wait image-scan-complete \
             --repository-name "$ECR_REPOSITORY" --image-id imageTag=${{ github.sha }}
 
