@@ -133,6 +133,18 @@ variable "github_repo" {
   type        = string
 }
 
+variable "github_owner_id" {
+  description = "Numeric GitHub account ID. GitHub can put it in the OIDC subject (repo:owner@ID/repo@ID:...). Leave \"*\" to accept any."
+  type        = string
+  default     = "*"
+}
+
+variable "github_repo_id" {
+  description = "Numeric GitHub repository ID used in the newer OIDC subject format. Leave \"*\" to accept any."
+  type        = string
+  default     = "*"
+}
+
 variable "create_github_oidc_provider" {
   description = "Set to false if the GitHub OIDC provider already exists in this AWS account"
   type        = bool

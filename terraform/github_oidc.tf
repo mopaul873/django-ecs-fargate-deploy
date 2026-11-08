@@ -14,6 +14,24 @@ data "aws_iam_openid_connect_provider" "github" {
 }
 
 locals {
+  github_owner = split("/", var.github_repo)[0]
+  github_name  = split("/", var.github_repo)[1]
+
+  # GitHub sends the subject in one of two formats:
+  #   classic:  repo:owner/repo:ref:refs/heads/main
+  #   with IDs: repo:owner@123/repo@456:ref:refs/heads/main  (immutable IDs, safer against renamed repos)
+  github_subject_prefixes = [
+    "repo:${var.github_repo}",
+    "repo:${local.github_owner}@${var.github_owner_id}/${local.github_name}@${var.github_repo_id}",
+  ]
+
+  github_allowed_subjects = flatten([
+    for p in local.github_subject_prefixes : [
+      "${p}:ref:refs/heads/main",
+      "${p}:environment:production",
+    ]
+  ])
+
   github_oidc_arn = var.create_github_oidc_provider ? aws_iam_openid_connect_provider.github[0].arn : data.aws_iam_openid_connect_provider.github[0].arn
 }
 
@@ -36,10 +54,7 @@ data "aws_iam_policy_document" "github_assume" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values = [
-        "repo:${var.github_repo}:ref:refs/heads/main",
-        "repo:${var.github_repo}:environment:production",
-      ]
+      values   = local.github_allowed_subjects
     }
   }
 }

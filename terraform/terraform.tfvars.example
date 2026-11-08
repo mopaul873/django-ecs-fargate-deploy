@@ -5,6 +5,11 @@ environment  = "prod"
 
 github_repo = "your-github-user/django-ecs-deploy"
 
+# Newer GitHub OIDC tokens include numeric IDs in the subject.
+# Find them with: gh api repos/OWNER/REPO --jq '"owner_id=\(.owner.id) repo_id=\(.id)"'
+# github_owner_id = "12345678"
+# github_repo_id  = "987654321"
+
 # Set to false if your AWS account already has the GitHub OIDC provider
 create_github_oidc_provider = true
 
