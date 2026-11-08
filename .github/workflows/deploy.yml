@@ -2,14 +2,11 @@
 name: Deploy to AWS ECS
 
 on:
-  # Automatic deploys are turned off until the AWS infrastructure exists.
-  # After `terraform apply` and adding the repo variables (README step 6),
-  # uncomment the 5 lines below so every push to main deploys.
-  # push:
-  #   branches: [main]
-  #   paths:
-  #     - "app/**"
-  #     - ".github/workflows/deploy.yml"
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - ".github/workflows/deploy.yml" 
   workflow_dispatch: # allow manual runs from the Actions tab
 
 # Needed for OIDC login to AWS (no stored AWS keys)
